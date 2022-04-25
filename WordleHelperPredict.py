@@ -32,7 +32,7 @@ import random
 
 def input_word(attempt):
     while True:
-        key='word'+str(attempt)
+        key='word'+str(attempt)+random.BPF
         word = st.text_input("Input the word you entered> ", key=key)
         if len(word) == WORD_LENGTH and word.lower() in word_stat_dict:
             break
@@ -45,7 +45,7 @@ def input_response(attempt):
     st.write("  Y for Yellow")
     st.write("  ? for Gray")
     
-    key='response'+str(attempt)
+    key='response'+str(attempt)+random.BPF
     while True:
         response = st.text_input("Response from Wordle> ", key=key)
         if len(response) == WORD_LENGTH and set(response) <= {"G", "Y", "?"}:
@@ -133,5 +133,9 @@ def solve():
 
 
 solve()
+
+random
+
+random.BPF
 
 
