@@ -32,7 +32,7 @@ import random
 
 def input_word(attempt):
     while True:
-        key='word'+str(attempt)+random.BPF
+        key='word'+str(attempt)+str(random.BPF)
         word = st.text_input("Input the word you entered> ", key=key)
         if len(word) == WORD_LENGTH and word.lower() in word_stat_dict:
             break
