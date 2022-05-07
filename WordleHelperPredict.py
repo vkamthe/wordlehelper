@@ -14,9 +14,11 @@
 # ---
 
 import csv
-with open('dict.csv') as csv_file:
-    reader = csv.reader(csv_file)
-    word_stat_dict = dict(reader)
+import pandas as pd
+word_stat_dict = pd.read_csv('dict_new.csv')
+
+# +
+#word_stat_dict
 
 # +
 # Print to find the first few entries in dictionary!
@@ -34,7 +36,7 @@ def input_word(attempt):
     key1='word'+str(attempt)
     while True:
         word = st.text_input("Input the word you entered> ", key=key1)
-        if len(word) == WORD_LENGTH and word.lower() in word_stat_dict:
+        if len(word) == WORD_LENGTH and word.lower() in list(word_stat_dict.word):
             break
     return word.lower()
 
@@ -43,12 +45,12 @@ def input_response(attempt):
     st.write("Type the color-coded reply from Wordle:")
     st.write("  G for Green")
     st.write("  Y for Yellow")
-    st.write("  ? for Gray")
+    st.write("  B for Gray")
     
     key2='response'+str(attempt)
     while True:
         response = st.text_input("Response from Wordle> ", key=key2)
-        if len(response) == WORD_LENGTH and set(response) <= {"G", "Y", "?"}:
+        if len(response) == WORD_LENGTH and set(response) <= {"G", "Y", "B"}:
             break
         else:
             st.write("Error - invalid answer", response)
@@ -73,20 +75,22 @@ def match_word_vector(word, word_vector):
     return True
 
 
-# +
-#match_word_vector('99999',word_vector)
-# -
-
 def match(word_vector, possible_words):
-    return [word for word in possible_words if match_word_vector(word, word_vector)]
+    return possible_words.loc[possible_words.apply(lambda row: match_word_vector(row['word'],word_vector),axis=1)]
 
 
 def yellow_chars_match(possible_words, yellow_chars):
     chars = set(yellow_chars)
-    return [word for word in possible_words if all((c in word) for c in chars)]
+    #return [row for row in possible_words if all((c in row.word) for c in chars)]
+    return possible_words.loc[possible_words.apply(lambda row: all((c in row['word']) for c in chars),axis=1)]
 
 
 def solve():
+    st.write("This program will help you find the next best word to enter in Wordle")
+    st.write("You will get list of words, sorted with probability, to enter, maximum benefit arising from word on top")
+    st.write("Along with words, you will also see if word is very frequent in english language, more frequent the word, better the chances")
+    st.write("You will also see if word is Plural. Plural words will have less chances")    
+
     possible_words = word_stat_dict.copy()
     word_vector = [set(string.ascii_lowercase) for _ in range(WORD_LENGTH)]
     yellow_chars = ''
@@ -95,7 +99,7 @@ def solve():
         st.write("Attempt", attempt, " with", len(possible_words), "possible words")
         #display_word_table(sort_by_word_commonality(possible_words)[:15])
         
-        st.write(list(possible_words)[:10])
+        st.write(possible_words[:10])
         
         word = input_word(attempt)
         response = input_response(attempt)
@@ -113,20 +117,24 @@ def solve():
                     word_vector[idx].remove(word[idx])
                 except KeyError:
                     pass
-            elif letter == "?":
+            elif letter == "B":
                 for vector in word_vector:
                     try:
                         vector.remove(word[idx])
                     except KeyError:
                         pass
         
+        #st.write("word_verctor", word_vector)
+        
         possible_words = match(word_vector, possible_words)
         st.write("possible words after word vector match ", len(possible_words))
+        #st.write("possible words ", possible_words[0:10])
         
         st.write("yellow characters", yellow_chars)
         possible_words = yellow_chars_match(possible_words, yellow_chars)
         st.write("possible words after yellow chars match ", len(possible_words))
-                                            
+        #st.write("possible words ", possible_words[0:10])
+                                          
     if attempt == ALLOWED_ATTEMPTS:
         st.write("Sorry.... I could not help in ", attempt , "attempts")
 
